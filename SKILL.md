@@ -109,7 +109,7 @@ configuration files first. Expand to remaining directories if time allows.
 
 **Adaptive priority:** If AWS/container/IaC markers are detected above (e.g., `serverless.yml`,
 `template.yaml`, `*.tf`, `Dockerfile`, `cdk.json`), prioritize the infrastructure and deployment
-checks (items 17-22) and flag them as infrastructure-critical in the report.
+checks (items 13-17) and flag them as infrastructure-critical in the report.
 
 ### Step 2: Check Node.js runtime version and vulnerable built-in API usage
 
