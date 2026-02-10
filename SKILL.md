@@ -80,6 +80,18 @@ This skill makes security checks:
 
 ---
 
+## Script security policy
+
+All scripts in `scripts/` follow these constraints:
+
+* **No network calls** — scripts never use curl, wget, fetch, or any network I/O
+* **No data exfiltration** — output is written only to local files in the working directory
+* **Transparent execution** — all actions are printed to stdout as they run
+* **Minimal privileges** — scripts require no elevated permissions; they only read project files and write audit output
+* **Hardened against scanned-project attacks** — NODE_OPTIONS is unset, output paths are checked for symlinks, scanned code output is sanitized to prevent prompt injection
+
+---
+
 **CRITICAL: Execute each workflow step as exactly one bash tool call. Steps must run in sequence — do not launch multiple steps in parallel. Within each step, all shell commands are chained into a single bash invocation (using `&&` / `\`).**
 
 ## Workflow
