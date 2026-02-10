@@ -56,6 +56,7 @@ bash <skill-path>/scripts/node-version-check.sh
 ```
 
 This checks:
+
 - Node.js runtime version against known EOL/CVE data
 - Usage of vulnerable built-in APIs (http parser, crypto, child_process, vm, etc.)
 - OpenSSL version bundled with the runtime

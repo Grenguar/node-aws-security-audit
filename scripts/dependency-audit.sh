@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # dependency-audit.sh — Collect dependency vulnerability data for the audit report.
 # Outputs: dependency-audit-results.txt in the current directory.
+#
+# shellcheck disable=SC2129  # Individual redirects are clearer in this audit script
 
 set -uo pipefail
 # NOTE: Do NOT use set -e here. Commands like npm audit and npm outdated

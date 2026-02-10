@@ -37,6 +37,7 @@ EOL releases by default since they lack resources to evaluate each individually.
 **Bundled dependencies:** OpenSSL 1.0.x, http_parser (legacy C parser), V8 6.x
 
 **Key unpatched CVEs:**
+
 - CVE-2019-15605 — HTTP request smuggling via malformed Transfer-Encoding
 - CVE-2019-15604 — TLS assertion crash with malformed certificate string
 - CVE-2019-15606 — HTTP header values not trimmed (trailing OWS)
@@ -44,6 +45,7 @@ EOL releases by default since they lack resources to evaluate each individually.
 - CVE-2018-7160 — DNS rebinding in inspector protocol
 
 **Vulnerable built-in API patterns:**
+
 - `http.createServer()` — uses legacy http_parser, all HRS CVEs apply
 - `crypto.createCipher()` — no IV, weak key derivation (deprecated since v10)
 - `Buffer(n)` constructor — uninitialized memory disclosure (fixed: Buffer.alloc)
@@ -60,6 +62,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 **Bundled dependencies:** OpenSSL 1.1.1, llhttp 2.x, V8 6.8
 
 **Key unpatched CVEs:**
+
 - CVE-2020-8265 — TLS use-after-free (memory corruption → potential RCE)
 - CVE-2020-8287 — HTTP request smuggling (duplicate headers)
 - CVE-2020-8174 — libuv buffer overflow in realpath (>256 byte paths)
@@ -67,6 +70,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 - CVE-2020-1971 — OpenSSL NULL pointer deref (DoS via GENERAL_NAME)
 
 **Vulnerable built-in API patterns:**
+
 - `tls.connect()` — use-after-free in TLSWrap (CVE-2020-8265)
 - `dns.lookup()` — libuv uv__idna_toascii OOB read (CVE-2021-22918)
 - `http` module with llhttp 2.x — smuggling via duplicate headers
@@ -79,6 +83,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 **Bundled dependencies:** OpenSSL 1.1.1, llhttp 2.x, V8 7.4–7.8
 
 **Key unpatched CVEs:**
+
 - CVE-2022-32212 — DNS rebinding in --inspect (bypass via invalid IPv4)
 - CVE-2022-35255 — Weak randomness in WebCrypto keygen
 - CVE-2022-32222 — OpenSSL config hijack on Linux/macOS (/home/iojs/...)
@@ -86,6 +91,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 - CVE-2021-22921 — Windows privilege escalation (PATH + DLL hijacking)
 
 **Vulnerable built-in API patterns:**
+
 - `crypto.subtle.generateKey()` — weak entropy (CVE-2022-35255)
 - `--inspect` flag — DNS rebinding to execute arbitrary code
 - `http` module — 3 separate Transfer-Encoding parsing bugs
@@ -98,6 +104,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 **Bundled dependencies:** OpenSSL 1.1.1, llhttp 2.x/6.x, V8 8.1–8.4
 
 **Key unpatched CVEs:**
+
 - CVE-2023-23936 — CRLF injection in fetch() host header
 - CVE-2023-24807 — ReDoS in Headers fetch API
 - CVE-2023-23920 — Insecure ICU data loading via env variable
@@ -105,6 +112,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 - CVE-2022-32213/32214/32215 — Transfer-Encoding smuggling
 
 **Vulnerable built-in API patterns:**
+
 - `fetch()` (global) — CRLF injection in host header allows response splitting
 - `http` module — CR-only delimiter accepted (RFC violation)
 - `ICU_DATA` env variable — loads arbitrary data files
@@ -117,6 +125,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 **Bundled dependencies:** OpenSSL 1.1.1/3.0, llhttp 6.x, V8 9.x
 
 **Key unpatched CVEs:**
+
 - CVE-2023-30586 — OpenSSL engine bypass of permission model
 - CVE-2023-30585 — Windows installer privilege escalation
 - CVE-2023-30589 — HTTP smuggling via empty CR-delimited headers
@@ -124,6 +133,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 - CVE-2023-30588 — Process crash via invalid x509 public key info
 
 **Vulnerable built-in API patterns:**
+
 - `crypto.setEngine()` — can disable permission model entirely
 - `crypto.createDiffieHellman()` — generateKeys() silently fails
 - `process.mainModule.__proto__.require()` — policy bypass
@@ -138,6 +148,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 **Bundled dependencies:** OpenSSL 3.0, llhttp 6.x, V8 10.x
 
 **Key unpatched CVEs:**
+
 - CVE-2025-23083 — Worker thread privilege escalation via diagnostics_channel
 - CVE-2025-23085 — HTTP/2 GOAWAY memory leak (DoS)
 - CVE-2025-23084 — Windows drive name path traversal
@@ -145,6 +156,7 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 - CVE-2024-21896 — Path traversal via symlinks bypasses permission model
 
 **Vulnerable built-in API patterns:**
+
 - `diagnostics_channel` — leaks internal worker instances
 - `http2` server — memory leak without GOAWAY notification
 - `path.join()` on Windows — doesn't treat drive names as special
@@ -157,12 +169,14 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 **Status:** Receiving security patches only. No new features.
 
 **Recently patched CVEs (verify you have latest patch):**
+
 - CVE-2025-59465 — HTTP/2 malformed HEADERS frame crash (High)
 - CVE-2025-59466 — Uncatchable stack overflow via async_hooks (Medium)
 - CVE-2025-59464 — TLS client certificate memory leak (Medium)
 - CVE-2025-55132 — fs.futimes() bypasses read-only permission model (Low)
 
 **Built-in API watch areas:**
+
 - `async_hooks.createHook()` — makes stack overflow uncatchable (patched ≥20.18.2)
 - `http2` server — malformed HEADERS frame crash (patched ≥20.18.2)
 - OpenSSL 3.0 — does NOT support PBMAC1 (safe from some Jan 2026 CVEs)
@@ -174,12 +188,14 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 **Status:** Receiving security patches.
 
 **Recently patched CVEs:**
+
 - CVE-2025-59465 — HTTP/2 HEADERS crash
 - CVE-2025-59466 — async_hooks stack overflow DoS
 - CVE-2026-21636 — Permission model bypass via Unix Domain Sockets
 - CVE-2026-21637 — TLS PSK/ALPN callback exception DoS
 
 **Built-in API watch areas:**
+
 - `--permission` flag — UDS connections bypass --allow-net (patched ≥22.13.1)
 - `fs.realpath()` — symlink path traversal bypasses permission model
 
@@ -190,11 +206,13 @@ Running a raw HTTP server on Node ≤8 means every request smuggling attack work
 **Status:** Recommended for production. Actively maintained.
 
 **Known issues (patched in latest):**
+
 - CVE-2026-21636 — Permission model bypass via UDS
 - CVE-2026-21637 — TLS callback exception causes DoS and FD leak
 - V8 rapidhash — HashDoS reintroduced in v24.0.0, patched in v24.12.0+
 
 **Built-in API watch areas:**
+
 - Hash table operations — rapidhash makes HashDoS possible (patched ≥24.12.0)
 - Ensure OpenSSL 3.5.x is at latest patch level
 

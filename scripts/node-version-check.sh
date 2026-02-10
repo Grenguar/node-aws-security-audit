@@ -1,13 +1,14 @@
 #!/usr/bin/env bash
 # node-version-check.sh — Check Node.js runtime version and scan for vulnerable built-in API usage.
 # Outputs: node-version-audit.txt in the current directory.
+#
+# shellcheck disable=SC2129  # Individual redirects are clearer in this audit script
+# shellcheck disable=SC2086  # SRC_PATTERN and EXCLUDE are intentionally unquoted (word-split into args)
+# shellcheck disable=SC2016  # Single-quoted grep patterns with $ are intentional (literal match)
 
 set -uo pipefail
 
 OUT="node-version-audit.txt"
-# NOTE: SRC_PATTERN and EXCLUDE are intentionally unquoted when used with grep.
-# Word splitting expands them into separate arguments. Do not double-quote them.
-# shellcheck disable=SC2086
 SRC_PATTERN="--include=*.js --include=*.ts --include=*.mjs --include=*.cjs --include=*.jsx --include=*.tsx"
 EXCLUDE="--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build --exclude-dir=.next --exclude-dir=coverage"
 

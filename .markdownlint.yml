@@ -11,3 +11,15 @@ MD033: false
 
 # MD041 - First line in file should be a top-level heading: disabled because SKILL.md starts with YAML frontmatter
 MD041: false
+
+# MD024 - Duplicate headings: disabled because vulnerability-catalog.md reuses "Vulnerable"/"Secure" subheadings by design
+MD024: false
+
+# MD029 - Ordered list prefix: disabled because SKILL.md uses intentional continuous numbering (1-22) across sub-sections
+MD029: false
+
+# MD036 - Emphasis as heading: disabled because the report template uses emphasis for styled summary lines
+MD036: false
+
+# MD060 - Table column style: disabled because auto-fixing alignment across 3000+ line reference files is impractical
+MD060: false

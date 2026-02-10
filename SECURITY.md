@@ -14,7 +14,7 @@ a pinned release, upgrade to the latest before reporting.
 
 If you discover a security issue in this tool, please report it privately.
 
-**Contact page:** https://www.soroka.tech/contact
+**Contact:** [soroka.tech/contact](https://www.soroka.tech/contact)
 
 Do **not** open a public GitHub issue for security reports.
 

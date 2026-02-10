@@ -20,7 +20,7 @@ npx skills add Grenguar/node-aws-security-audit
 
 Then ask your agent:
 
-```
+```text
 > audit my project for security vulnerabilities
 ```
 
@@ -56,7 +56,7 @@ The sample app contains intentional vulnerabilities across Express, Lambda, Dock
 <details>
 <summary>Show example audit output</summary>
 
-```
+```text
 Security Score: 58 / 100 (C) -- Concerning
 [███████████░░░░░░░░░] 58/100
 
@@ -129,7 +129,7 @@ git clone https://github.com/Grenguar/node-aws-security-audit.git <path-from-tab
 
 ## Usage
 
-```
+```text
 > audit my project for security vulnerabilities
 > run a security review
 > check for OWASP vulnerabilities
