@@ -195,6 +195,21 @@ using the grep patterns provided.
 21. **Bun runtime** — Bun.serve() security headers, Bun shell injection, bun:sqlite injection, Bun.file() path traversal, non-cryptographic Bun.hash usage
 22. **AppSync/Amplify** — authorization mode misconfiguration, resolver injection, GraphQL introspection, Cognito misconfiguration, API key exposure, AppSync Events security
 
+**Quick-reference: critical detection patterns**
+
+Use these patterns as a minimum scan baseline. See `references/vulnerability-catalog.md` for the full catalog.
+
+| Category | Pattern |
+|----------|---------|
+| Hardcoded secrets | `(password\|secret\|api_key\|apiKey\|token\|JWT_SECRET)\s*[:=]\s*['"][^'"]{4,}` |
+| eval / Function | `\beval\s*\(\|new\s+Function\s*\(` |
+| Command injection | `exec\(\|execSync\(\|spawn\(` with user input |
+| SQL injection | ``(query\|execute)\s*\(\s*['`].*\+\s*req\.`` |
+| NoSQL injection | `\.find\(\s*\{.*req\.(body\|query\|params)` |
+| Weak crypto | `createHash\(\s*['"]md5['"]\|createHash\(\s*['"]sha1['"]` |
+| SSRF | `(axios\|fetch\|http\.get)\(\s*(req\.\|url\|href)` |
+| Prototype pollution | `__proto__\|constructor\[\|\.prototype\s*=` |
+
 ### Step 5: Generate the report
 
 Read `references/report-template.md` for the exact output format. The report must include:
