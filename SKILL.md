@@ -80,15 +80,13 @@ This skill makes security checks:
 
 ---
 
-**CRITICAL: Run all bash commands sequentially, one tool call at a time. Never run
-multiple bash commands in parallel — if one fails it cancels the others.**
+**CRITICAL: Execute each workflow step as exactly one bash tool call. Steps must run in sequence — do not launch multiple steps in parallel. Within each step, all shell commands are chained into a single bash invocation (using `&&` / `\`).**
 
 ## Workflow
 
 ### Step 1: Discover project structure
 
-Run this **single** command block to understand the project. All commands must run in
-one bash invocation to avoid parallel execution failures:
+Run this single command block to discover the project structure:
 
 ```bash
 echo "=== Package manifests ===" && \
