@@ -92,14 +92,14 @@ one bash invocation to avoid parallel execution failures:
 
 ```bash
 echo "=== Package manifests ===" && \
-find . -name "package.json" -not -path "*/node_modules/*" -maxdepth 3 2>/dev/null; \
+find . -maxdepth 3 -name "package.json" -not -path "*/node_modules/*" 2>/dev/null; \
 echo "" && echo "=== Source files ===" && \
 find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" -o -name "*.mjs" -o -name "*.cjs" \) -not -path "*/node_modules/*" -not -path "*/dist/*" -not -path "*/.next/*" -not -path "*/build/*" 2>/dev/null | head -100; \
 echo "" && echo "=== Config files ===" && \
 find . -maxdepth 1 \( -name ".env*" -o -name "tsconfig.json" -o -name ".eslintrc*" -o -name ".npmrc" \) 2>/dev/null; \
 echo "" && echo "=== AWS / Container / IaC markers ===" && \
 find . -maxdepth 3 \( -name "serverless.yml" -o -name "serverless.yaml" -o -name "serverless.ts" -o -name "template.yaml" -o -name "template.yml" -o -name "sam.yaml" -o -name "cdk.json" -o -name "Dockerfile" -o -name "docker-compose.yml" -o -name "docker-compose.yaml" \) -not -path "*/node_modules/*" 2>/dev/null; \
-find . -name "*.tf" -not -path "*/.terraform/*" -not -path "*/node_modules/*" -maxdepth 3 2>/dev/null | head -10; \
+find . -maxdepth 3 -name "*.tf" -not -path "*/.terraform/*" -not -path "*/node_modules/*" 2>/dev/null | head -10; \
 echo "=== Discovery complete ==="
 ```
 
