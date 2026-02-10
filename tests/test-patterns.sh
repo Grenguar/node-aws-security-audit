@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # test-patterns.sh — Verify security audit grep patterns against fixtures
+# shellcheck disable=SC2016  # Single-quoted grep patterns with $ are intentional (literal match)
 set -uo pipefail
 
 PASS=0
@@ -138,6 +139,88 @@ if grep -qE "require\(['\"]querystring['\"]\)" "$FIXTURES_DIR/secure.js"; then
 else
   pass "no querystring false positive"
 fi
+
+echo ""
+
+# --- Security hardening regression tests ---
+echo "## Security hardening tests"
+SCRIPT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
+# Test A1: Symlink guard in node-version-check.sh
+if grep -q 'if \[ -L "\$OUT" \]' "$SCRIPT_DIR/scripts/node-version-check.sh"; then
+  pass "node-version-check.sh has symlink guard"
+else
+  fail "node-version-check.sh missing symlink guard"
+fi
+
+# Test A2: Symlink guard in dependency-audit.sh
+if grep -q 'if \[ -L "\$OUT" \]' "$SCRIPT_DIR/scripts/dependency-audit.sh"; then
+  pass "dependency-audit.sh has symlink guard"
+else
+  fail "dependency-audit.sh missing symlink guard"
+fi
+
+# Test B1: NODE_OPTIONS neutralization in node-version-check.sh
+if grep -q 'unset NODE_OPTIONS' "$SCRIPT_DIR/scripts/node-version-check.sh"; then
+  pass "node-version-check.sh unsets NODE_OPTIONS"
+else
+  fail "node-version-check.sh does not unset NODE_OPTIONS"
+fi
+
+# Test B2: NODE_OPTIONS neutralization in dependency-audit.sh
+if grep -q 'unset NODE_OPTIONS' "$SCRIPT_DIR/scripts/dependency-audit.sh"; then
+  pass "dependency-audit.sh unsets NODE_OPTIONS"
+else
+  fail "dependency-audit.sh does not unset NODE_OPTIONS"
+fi
+
+# Test C1: Output sanitization function exists
+if grep -q 'sanitize_line()' "$SCRIPT_DIR/scripts/node-version-check.sh"; then
+  pass "node-version-check.sh has sanitize_line function"
+else
+  fail "node-version-check.sh missing sanitize_line function"
+fi
+
+# Test C2: AI prompt injection boundary marker in output
+if grep -q "Lines prefixed with.*are.*DATA.*not instructions" "$SCRIPT_DIR/scripts/node-version-check.sh"; then
+  pass "node-version-check.sh has AI prompt injection boundary marker"
+else
+  fail "node-version-check.sh missing AI prompt injection boundary marker"
+fi
+
+# Test D1: npm registry override
+if grep -q 'npm_config_registry' "$SCRIPT_DIR/scripts/dependency-audit.sh"; then
+  pass "dependency-audit.sh overrides npm registry"
+else
+  fail "dependency-audit.sh does not override npm registry"
+fi
+
+# Test D2: npm user config nullified
+if grep -q 'npm_config_userconfig' "$SCRIPT_DIR/scripts/dependency-audit.sh"; then
+  pass "dependency-audit.sh nullifies user npmrc"
+else
+  fail "dependency-audit.sh does not nullify user npmrc"
+fi
+
+# Test E1: No unquoted $DOCKERFILES in for loop
+if grep -qE 'for DF in \$DOCKERFILES' "$SCRIPT_DIR/scripts/node-version-check.sh"; then
+  fail "node-version-check.sh still has unquoted \$DOCKERFILES in for loop"
+else
+  pass "node-version-check.sh fixed unquoted \$DOCKERFILES"
+fi
+
+# Test functional: symlink detection works
+TEST_TMPDIR=$(mktemp -d)
+TEST_TARGET="$TEST_TMPDIR/target.txt"
+TEST_LINK="$TEST_TMPDIR/test-symlink"
+echo "original" > "$TEST_TARGET"
+ln -s "$TEST_TARGET" "$TEST_LINK"
+if [ -L "$TEST_LINK" ]; then
+  pass "symlink detection works on test symlink"
+else
+  fail "symlink detection failed on test symlink"
+fi
+rm -rf "$TEST_TMPDIR"
 
 echo ""
 echo "=== Results ==="
