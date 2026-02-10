@@ -12,9 +12,73 @@ metadata:
 
 ## Overview
 
-Perform a static security audit of a Node.js/JS/TS codebase and produce a Markdown
-report. The audit covers OWASP Top 10:2021 categories mapped to Node.js-specific
-vulnerability patterns.
+This skill answers a very practical question:
+
+"Is this Node.js app safe to run on AWS — and if not, what should I fix?"
+
+It performs a static security audit of Node.js / JavaScript / TypeScript codebases and produces an actionable Markdown report with concrete findings and  real, code-level risks that matter in production, especially for Node applications running on AWS.
+
+I built it to be safe, explicit, and predictable in agent-driven workflows, so that you can understand security context *before* production problems appear.
+
+---
+
+## The problem it solves
+
+Node.js apps often look fine in CI:
+
+* Tests pass
+* Builds succeed
+* Infrastructure deploys
+
+…and yet security issues quietly slip through.
+
+Common reasons:
+
+* AWS SDKs are easy to misuse
+* Secrets leak through environment assumptions
+* Risky patterns don't fail loudly
+* Agents and scripts run "helpful" but vague shell commands
+
+This skill makes security checks:
+
+* Explicit (no hidden execution)
+* Repeatable (same input, same output)
+* Reviewable (clear Markdown, not logs)
+
+---
+
+## What it checks
+
+* OWASP Top 10 (2021) mapped to real Node.js vulnerability patterns
+* Common AWS security anti-patterns in application code
+* Risky handling of secrets, environment variables, and credentials
+* Code paths that may enable data exposure or privilege escalation
+
+---
+
+## What you get
+
+* An actually readable Markdown report
+* Clear issue descriptions (no scanner gibberish)
+* Actionable advice you can follow or task your agent with
+
+* Output suitable for:
+
+  * Pull requests
+  * CI artifacts
+  * Agent context
+  * Security reviews
+
+---
+
+## Where it fits
+
+* Local development
+* CI pipelines
+* AWS workloads
+* AI agents using Skills.sh as a constrained execution layer
+
+---
 
 **CRITICAL: Run all bash commands sequentially, one tool call at a time. Never run
 multiple bash commands in parallel — if one fails it cancels the others.**
