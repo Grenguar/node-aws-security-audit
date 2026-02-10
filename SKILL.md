@@ -39,6 +39,10 @@ find . -name "*.tf" -not -path "*/.terraform/*" -not -path "*/node_modules/*" -m
 echo "=== Discovery complete ==="
 ```
 
+**Large codebases:** If the source file listing is truncated (>100 files), focus
+the scan on entry points (`src/`, `app/`, `routes/`, `handlers/`, `api/`) and
+configuration files first. Expand to remaining directories if time allows.
+
 **Adaptive priority:** If AWS/container/IaC markers are detected above (e.g., `serverless.yml`,
 `template.yaml`, `*.tf`, `Dockerfile`, `cdk.json`), prioritize the infrastructure and deployment
 checks (items 17-22) and flag them as infrastructure-critical in the report.
@@ -69,6 +73,10 @@ bash <skill-path>/scripts/dependency-audit.sh
 ```
 
 This produces `dependency-audit-results.txt` with known CVEs and outdated packages.
+
+**If a step fails:** If `node` or `npm` is not available, note it as a finding
+(the target project may not have dependencies installed). Continue with the
+remaining steps — partial results are still valuable. Do not abort the audit.
 
 ### Step 4: Static code analysis
 

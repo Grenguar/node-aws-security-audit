@@ -5,6 +5,9 @@
 set -uo pipefail
 
 OUT="node-version-audit.txt"
+# NOTE: SRC_PATTERN and EXCLUDE are intentionally unquoted when used with grep.
+# Word splitting expands them into separate arguments. Do not double-quote them.
+# shellcheck disable=SC2086
 SRC_PATTERN="--include=*.js --include=*.ts --include=*.mjs --include=*.cjs --include=*.jsx --include=*.tsx"
 EXCLUDE="--exclude-dir=node_modules --exclude-dir=dist --exclude-dir=build --exclude-dir=.next --exclude-dir=coverage"
 
@@ -206,7 +209,7 @@ echo "" >> "$OUT"
 # --- 4c. child_process — command injection surface ---
 echo "### 4c. child_process module (command injection surface)" >> "$OUT"
 CP_USAGE=$(grep -rn $SRC_PATTERN $EXCLUDE -E "require\(['\"]child_process['\"]|from ['\"]child_process['\"]" . 2>/dev/null || true)
-CP_EXEC=$(grep -rn $SRC_PATTERN $EXCLUDE -E "\bexec\(|\bexecSync\(" . 2>/dev/null | grep -v "execFile\|RegExp" || true)
+CP_EXEC=$(grep -rn $SRC_PATTERN $EXCLUDE -E "\bexec\(|\bexecSync\(" . 2>/dev/null | grep -Ev "execFile|RegExp" || true)
 if [ -n "$CP_USAGE" ] || [ -n "$CP_EXEC" ]; then
   echo "  ⚠ child_process usage found:" >> "$OUT"
   [ -n "$CP_USAGE" ] && echo "$CP_USAGE" | head -10 | while read -r line; do echo "    $line" >> "$OUT"; done
@@ -520,13 +523,38 @@ if [ -f "package.json" ]; then
     echo "  Detected: $fw" >> "$OUT"
   done
 
-  USES_EXPRESS=$(node -e "const p=require('./package.json'); const a={...p.dependencies,...p.devDependencies}; console.log(!!a['express'])" 2>/dev/null || echo "false")
-  USES_KOA=$(node -e "const p=require('./package.json'); const a={...p.dependencies,...p.devDependencies}; console.log(!!a['koa'])" 2>/dev/null || echo "false")
-  USES_WEBPACK=$(node -e "const p=require('./package.json'); const a={...p.dependencies,...p.devDependencies}; console.log(!!a['webpack'])" 2>/dev/null || echo "false")
-  USES_NESTJS=$(node -e "const p=require('./package.json'); const a={...p.dependencies,...p.devDependencies}; console.log(!!a['@nestjs/core'])" 2>/dev/null || echo "false")
-  USES_FASTIFY=$(node -e "const p=require('./package.json'); const a={...p.dependencies,...p.devDependencies}; console.log(!!a['fastify'])" 2>/dev/null || echo "false")
-  USES_LAMBDA=$(node -e "const p=require('./package.json'); const a={...p.dependencies,...p.devDependencies}; console.log(!!(a['aws-lambda']||a['@aws-sdk/client-lambda']||a['serverless']))" 2>/dev/null || echo "false")
-  USES_APPSYNC=$(node -e "const p=require('./package.json'); const a={...p.dependencies,...p.devDependencies}; console.log(!!(a['@aws-amplify/backend']||a['aws-appsync']||a['@aws-sdk/client-appsync']))" 2>/dev/null || echo "false")
+  FRAMEWORK_FLAGS=$(node -e "
+    const pkg = require('./package.json');
+    const all = { ...pkg.dependencies, ...pkg.devDependencies };
+    const flags = {
+      express: !!all['express'],
+      koa: !!all['koa'],
+      webpack: !!all['webpack'],
+      nestjs: !!all['@nestjs/core'],
+      fastify: !!all['fastify'],
+      lambda: !!(all['aws-lambda'] || all['@aws-sdk/client-lambda'] || all['serverless']),
+      appsync: !!(all['@aws-amplify/backend'] || all['aws-appsync'] || all['@aws-sdk/client-appsync'])
+    };
+    Object.entries(flags).forEach(([k, v]) => console.log(k + '=' + v));
+  " 2>/dev/null || echo "")
+
+  # Parse flags
+  USES_EXPRESS=$(echo "$FRAMEWORK_FLAGS" | grep "^express=" | cut -d= -f2)
+  USES_KOA=$(echo "$FRAMEWORK_FLAGS" | grep "^koa=" | cut -d= -f2)
+  USES_WEBPACK=$(echo "$FRAMEWORK_FLAGS" | grep "^webpack=" | cut -d= -f2)
+  USES_NESTJS=$(echo "$FRAMEWORK_FLAGS" | grep "^nestjs=" | cut -d= -f2)
+  USES_FASTIFY=$(echo "$FRAMEWORK_FLAGS" | grep "^fastify=" | cut -d= -f2)
+  USES_LAMBDA=$(echo "$FRAMEWORK_FLAGS" | grep "^lambda=" | cut -d= -f2)
+  USES_APPSYNC=$(echo "$FRAMEWORK_FLAGS" | grep "^appsync=" | cut -d= -f2)
+
+  # Default to false if node failed
+  USES_EXPRESS="${USES_EXPRESS:-false}"
+  USES_KOA="${USES_KOA:-false}"
+  USES_WEBPACK="${USES_WEBPACK:-false}"
+  USES_NESTJS="${USES_NESTJS:-false}"
+  USES_FASTIFY="${USES_FASTIFY:-false}"
+  USES_LAMBDA="${USES_LAMBDA:-false}"
+  USES_APPSYNC="${USES_APPSYNC:-false}"
 fi
 
 # Detect Bun runtime
@@ -991,70 +1019,70 @@ if [ "$USES_TERRAFORM" = "true" ]; then
   echo "### 5j. Terraform IaC Security" >> "$OUT"
 
   # IAM wildcard actions
-  IAM_WILDCARDS=$(rg -n 'actions\s*=\s*\[\s*"\*"\s*\]|"Action"\s*:\s*"\*"' --type tf 2>/dev/null || true)
+  IAM_WILDCARDS=$(grep -rnE 'actions\s*=\s*\[\s*"\*"\s*\]|"Action"\s*:\s*"\*"' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$IAM_WILDCARDS" ]; then
     echo "  🔴 IAM wildcard actions found:" >> "$OUT"
     echo "$IAM_WILDCARDS" | head -5 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # Hardcoded credentials
-  HARDCODED_CREDS=$(rg -n 'AKIA[0-9A-Z]{16}|access_key\s*=\s*"[^${}"]+|secret_key\s*=\s*"[^${}"]+' --type tf 2>/dev/null || true)
+  HARDCODED_CREDS=$(grep -rnE 'AKIA[0-9A-Z]{16}|access_key\s*=\s*"[^${}"]+|secret_key\s*=\s*"[^${}"]+' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$HARDCODED_CREDS" ]; then
     echo "  🔴 Hardcoded AWS credentials in Terraform:" >> "$OUT"
     echo "$HARDCODED_CREDS" | head -5 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # Plaintext secrets in environment
-  TF_SECRETS=$(rg -n '(PASSWORD|SECRET|API_KEY|PRIVATE_KEY|TOKEN|CREDENTIAL)\s*=\s*"[^${}"]+' --type tf 2>/dev/null || true)
+  TF_SECRETS=$(grep -rnE '(PASSWORD|SECRET|API_KEY|PRIVATE_KEY|TOKEN|CREDENTIAL)\s*=\s*"[^${}"]+' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$TF_SECRETS" ]; then
     echo "  🔴 Plaintext secrets in Terraform environment variables:" >> "$OUT"
     echo "$TF_SECRETS" | head -5 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # Function URL without auth
-  FUNC_URL_NONE=$(rg -n 'authorization_type\s*=\s*"NONE"' --type tf 2>/dev/null || true)
+  FUNC_URL_NONE=$(grep -rnE 'authorization_type\s*=\s*"NONE"' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$FUNC_URL_NONE" ]; then
     echo "  🔴 Lambda function URL without authentication:" >> "$OUT"
     echo "$FUNC_URL_NONE" | head -5 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # Privileged containers
-  PRIVILEGED=$(rg -n '"privileged"\s*:\s*true|privileged\s*=\s*true' --type tf 2>/dev/null || true)
+  PRIVILEGED=$(grep -rnE '"privileged"\s*:\s*true|privileged\s*=\s*true' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$PRIVILEGED" ]; then
     echo "  🔴 Privileged container mode enabled:" >> "$OUT"
     echo "$PRIVILEGED" | head -5 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # EOL Node.js runtime
-  EOL_RUNTIME=$(rg -n 'runtime\s*=\s*"nodejs(10|12|14|16|18)\.x"' --type tf 2>/dev/null || true)
+  EOL_RUNTIME=$(grep -rnE 'runtime\s*=\s*"nodejs(10|12|14|16|18)\.x"' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$EOL_RUNTIME" ]; then
     echo "  🟠 EOL/deprecated Node.js runtime in Terraform:" >> "$OUT"
     echo "$EOL_RUNTIME" | head -5 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # Debug mode
-  DEBUG_MODE=$(rg -n 'NODE_OPTIONS.*--inspect|NODE_ENV.*"(development|dev)"' --type tf 2>/dev/null || true)
+  DEBUG_MODE=$(grep -rnE 'NODE_OPTIONS.*--inspect|NODE_ENV.*"(development|dev)"' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$DEBUG_MODE" ]; then
     echo "  🔴 Debug mode enabled in Terraform:" >> "$OUT"
     echo "$DEBUG_MODE" | head -5 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # Public IP assignment
-  PUBLIC_IP=$(rg -n 'assign_public_ip\s*=\s*true' --type tf 2>/dev/null || true)
+  PUBLIC_IP=$(grep -rnE 'assign_public_ip\s*=\s*true' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$PUBLIC_IP" ]; then
     echo "  🟠 Public IP assigned to ECS tasks:" >> "$OUT"
     echo "$PUBLIC_IP" | head -3 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # Debug ports exposed
-  DEBUG_PORTS=$(rg -n '"(containerPort|hostPort)"\s*:\s*(9229|5858)' --type tf 2>/dev/null || true)
+  DEBUG_PORTS=$(grep -rnE '"(containerPort|hostPort)"\s*:\s*(9229|5858)' --include="*.tf" . 2>/dev/null || true)
   if [ -n "$DEBUG_PORTS" ]; then
     echo "  🔴 Node.js debug ports exposed in ECS:" >> "$OUT"
     echo "$DEBUG_PORTS" | head -3 | while read -r line; do echo "    $line" >> "$OUT"; done
   fi
 
   # State file encryption
-  for f in $(rg -l 'backend\s+"s3"' --type tf 2>/dev/null || true); do
+  for f in $(grep -rlE 'backend\s+"s3"' --include="*.tf" . 2>/dev/null || true); do
     if ! grep -q 'encrypt' "$f" 2>/dev/null; then
       echo "  🟠 Missing S3 state file encryption: $f" >> "$OUT"
     fi

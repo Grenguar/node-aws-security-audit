@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # install.sh — Quick installer for nodejs-security-audit skill
-# Usage: bash <(curl -fsSL https://raw.githubusercontent.com/grenguar/nodejs-security-audit/main/install.sh)
+# Usage: bash <(curl -fsSL https://raw.githubusercontent.com/Grenguar/node-aws-security-audit/main/install.sh)
 
 set -euo pipefail
 
-REPO="https://github.com/grenguar/nodejs-security-audit.git"
+REPO="https://github.com/Grenguar/node-aws-security-audit.git"
 SKILL_NAME="nodejs-security-audit"
 
 echo ""
@@ -92,6 +92,6 @@ echo "  Done! To run an audit, open your agent and type:"
 echo ""
 echo "    > audit my project for security vulnerabilities"
 echo ""
-echo "  Learn more: https://github.com/grenguar/nodejs-security-audit"
+echo "  Learn more: https://github.com/Grenguar/node-aws-security-audit"
 echo "  Soroka Tech: https://sorokatech.com"
 echo ""
