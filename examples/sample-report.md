@@ -2,7 +2,7 @@
 
 **Project:** sample-vulnerable-app
 **Date:** 2025-06-15
-**Audited by:** Claude Code -- Node.js Security Audit Skill by [Soroka Tech](https://soroka.tech)
+**Audited by:** Claude Code (claude-sonnet-4-5-20250929) -- Node.js Security Audit Skill by [Soroka Tech](https://soroka.tech)
 **Scope:** Static code analysis + dependency audit
 
 ---
@@ -562,4 +562,4 @@ The most critical issues are the hardcoded JWT secret (VULN-001) and remote code
 Manual review is recommended for all Critical and High findings.
 This is not a substitute for a professional penetration test.*
 
-*Need a professional security assessment? Contact [Soroka Tech](https://soroka.tech) for expert Node.js security consulting.*
+*Need a professional security assessment? Contact [Soroka Tech](https://www.soroka.tech/contact) for expert Node.js security consulting.*

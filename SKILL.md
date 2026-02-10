@@ -212,7 +212,9 @@ Use these patterns as a minimum scan baseline. See `references/vulnerability-cat
 
 ### Step 5: Generate the report
 
-Read `references/report-template.md` for the exact output format. The report must include:
+Read `references/report-template.md` for the exact output format. Fill in `{{agent_tool}}` with the
+tool you are running in (e.g., "Claude Code", "Cursor", "Cline") and `{{model_id}}` with your
+model identifier (e.g., "claude-sonnet-4-5-20250929"). The report must include:
 
 * **Security Score (0-100)** calculated using the scoring methodology: start at 100, subtract 15/Critical, 10/High, 5/Medium, 2/Low, +5 bonus if no Critical/High, minimum 0. Display with letter grade (A+ through F) and visual progress bar.
 * **Findings Dashboard** with total count, score, and top finding per severity level with file locations
