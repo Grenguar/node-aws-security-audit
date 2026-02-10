@@ -1,0 +1,34 @@
+service: sample-vulnerable-app
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  # VULN: wildcard IAM — grants full access to every AWS service
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action: '*'
+          Resource: '*'
+  environment:
+    # VULN: hardcoded secret in config — visible in CloudFormation / version control
+    DB_PASSWORD: 'p@ssw0rd!'
+
+functions:
+  api:
+    handler: src/handler.handler
+    events:
+      - http:
+          path: /users
+          method: post
+          # VULN: open CORS with no authorizer — unauthenticated public access
+          cors: true
+      - http:
+          path: /users
+          method: get
+          cors: true
+          # VULN: no authorizer on GET endpoint
+
+plugins:
+  # VULN: serverless-offline bundled — dev dependency in production config
+  - serverless-offline

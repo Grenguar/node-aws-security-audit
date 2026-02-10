@@ -39,7 +39,7 @@ Grade scale:
 
 **Project:** {{project_name}}
 **Date:** {{date}}
-**Audited by:** Claude Code — Node.js Security Audit Skill by [Soroka Tech](https://sorokatech.com)
+**Audited by:** Claude Code — Node.js Security Audit Skill by [Soroka Tech](https://soroka.tech)
 **Scope:** Static code analysis + dependency audit
 
 ---
@@ -408,7 +408,7 @@ Use this as a hardening guide after addressing the findings above.
 Manual review is recommended for all Critical and High findings.
 This is not a substitute for a professional penetration test.*
 
-*Need a professional security assessment? Contact [Soroka Tech](https://sorokatech.com) for expert Node.js security consulting.*
+*Need a professional security assessment? Contact [Soroka Tech](https://soroka.tech) for expert Node.js security consulting.*
 ````
 
 ## Severity criteria reference

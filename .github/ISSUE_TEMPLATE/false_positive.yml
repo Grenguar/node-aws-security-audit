@@ -1,0 +1,47 @@
+name: False Positive Report
+description: The scanner flagged something that is not a real vulnerability
+labels: ["false-positive"]
+body:
+  - type: input
+    id: finding-id
+    attributes:
+      label: Finding ID or title
+      description: The identifier or title of the finding that was incorrectly flagged.
+      placeholder: "e.g., A03-001 SQL Injection"
+    validations:
+      required: true
+
+  - type: textarea
+    id: flagged-code
+    attributes:
+      label: Code that was flagged
+      description: Paste the code snippet that the scanner flagged as vulnerable.
+      render: javascript
+    validations:
+      required: true
+
+  - type: textarea
+    id: justification
+    attributes:
+      label: Why this is not a vulnerability
+      description: Explain why this code is safe and should not be flagged.
+      placeholder: Describe the context that makes this a false positive.
+    validations:
+      required: true
+
+  - type: input
+    id: framework-context
+    attributes:
+      label: Framework/runtime context
+      description: The framework and runtime environment where this code runs.
+      placeholder: "e.g., Express 4.x on Node 22"
+    validations:
+      required: false
+
+  - type: textarea
+    id: suggested-fix
+    attributes:
+      label: Suggested fix for the pattern
+      description: If you have ideas on how the detection pattern could be improved to avoid this false positive, describe them here.
+    validations:
+      required: false

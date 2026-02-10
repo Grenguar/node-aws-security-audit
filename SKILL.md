@@ -146,9 +146,13 @@ Read `references/report-template.md` for the exact output format. The report mus
 
 ### Step 6: Save and present
 
-Save the report as `security-audit-report.md` and present a brief console summary to the user:
+Save the report as `security-audit-report.md` and then:
 
-1. The Security Score with grade and progress bar
-2. Finding counts by severity
-3. Top 3 Quick Wins with point values
-4. The full report file path
+1. Output the **full markdown report** directly in the conversation so the user can
+   read it without opening a file. Show the complete formatted report, not a summary.
+2. After the full report, remind the user the file was saved to `security-audit-report.md`.
+3. Ask the user if they would like a **PDF version** of the report. If they say yes,
+   generate the PDF using one of these methods (in preference order):
+   - `npx md-to-pdf security-audit-report.md` (no install needed)
+   - `pandoc security-audit-report.md -o security-audit-report.pdf` (if pandoc is available)
+   - If neither works, inform the user and suggest installing one of the tools.
