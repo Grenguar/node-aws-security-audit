@@ -1,0 +1,146 @@
+---
+name: node-aws-security-audit
+description: "Perform comprehensive security audits on Node.js, JavaScript, and TypeScript codebases. Scans source code for OWASP Top 10 vulnerabilities, insecure patterns, dependency risks, and generates a prioritized Markdown audit report with severity levels (Critical, High, Medium, Low), code citations, and remediation guidance. Use when asked to audit, review, scan, or check security of a Node.js/JS/TS project, find vulnerabilities, check for OWASP compliance, or generate a security report. Also triggers on: security review, pentest, vulnerability scan, is my code secure, check for injection, check dependencies."
+license: MIT
+metadata:
+  author: grenguar
+  version: "3.0.0"
+  tags: security, owasp, nodejs, audit, vulnerability-scanner
+---
+
+# Node.js / JavaScript / TypeScript Security Audit
+
+## Overview
+
+Perform a static security audit of a Node.js/JS/TS codebase and produce a Markdown
+report. The audit covers OWASP Top 10:2021 categories mapped to Node.js-specific
+vulnerability patterns.
+
+**CRITICAL: Run all bash commands sequentially, one tool call at a time. Never run
+multiple bash commands in parallel — if one fails it cancels the others.**
+
+## Workflow
+
+### Step 1: Discover project structure
+
+Run this **single** command block to understand the project. All commands must run in
+one bash invocation to avoid parallel execution failures:
+
+```bash
+echo "=== Package manifests ===" && \
+find . -name "package.json" -not -path "*/node_modules/*" -maxdepth 3 2>/dev/null; \
+echo "" && echo "=== Source files ===" && \
+find . -type f \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" -o -name "*.mjs" -o -name "*.cjs" \) -not -path "*/node_modules/*" -not -path "*/dist/*" -not -path "*/.next/*" -not -path "*/build/*" 2>/dev/null | head -100; \
+echo "" && echo "=== Config files ===" && \
+find . -maxdepth 1 \( -name ".env*" -o -name "tsconfig.json" -o -name ".eslintrc*" -o -name ".npmrc" \) 2>/dev/null; \
+echo "" && echo "=== AWS / Container / IaC markers ===" && \
+find . -maxdepth 3 \( -name "serverless.yml" -o -name "serverless.yaml" -o -name "serverless.ts" -o -name "template.yaml" -o -name "template.yml" -o -name "sam.yaml" -o -name "cdk.json" -o -name "Dockerfile" -o -name "docker-compose.yml" -o -name "docker-compose.yaml" \) -not -path "*/node_modules/*" 2>/dev/null; \
+find . -name "*.tf" -not -path "*/.terraform/*" -not -path "*/node_modules/*" -maxdepth 3 2>/dev/null | head -10; \
+echo "=== Discovery complete ==="
+```
+
+**Adaptive priority:** If AWS/container/IaC markers are detected above (e.g., `serverless.yml`,
+`template.yaml`, `*.tf`, `Dockerfile`, `cdk.json`), prioritize the infrastructure and deployment
+checks (items 17-22) and flag them as infrastructure-critical in the report.
+
+### Step 2: Check Node.js runtime version and vulnerable built-in API usage
+
+Run the runtime version scanner:
+
+```bash
+bash <skill-path>/scripts/node-version-check.sh
+```
+
+This checks:
+- Node.js runtime version against known EOL/CVE data
+- Usage of vulnerable built-in APIs (http parser, crypto, child_process, vm, etc.)
+- OpenSSL version bundled with the runtime
+- Dangerous built-in patterns specific to the detected Node.js version
+
+Read `references/version-vulnerabilities.md` for the full mapping of Node.js
+versions to known CVEs and vulnerable built-in APIs.
+
+### Step 3: Run dependency audit
+
+Execute the dependency audit script:
+
+```bash
+bash <skill-path>/scripts/dependency-audit.sh
+```
+
+This produces `dependency-audit-results.txt` with known CVEs and outdated packages.
+
+### Step 4: Static code analysis
+
+Read `references/vulnerability-catalog.md` for the full list of patterns, grep
+signatures, and code examples. For each vulnerability category, scan the codebase
+using the grep patterns provided.
+
+**Scan order (by exploit impact):**
+
+**Critical path — scan these first:**
+
+1. **Runtime version** — use results from Step 2 (EOL version = automatic Critical)
+2. **Injection** — SQL/NoSQL/command injection, `eval()`, `Function()`, template literals in queries
+3. **Cryptographic failures** — hardcoded secrets, weak algorithms, missing HTTPS enforcement
+4. **Broken access control** — missing auth middleware, IDOR patterns, CORS misconfiguration
+5. **Vulnerable built-in APIs** — use results from Step 2 (http, crypto, vm, child_process)
+6. **Auth failures** — weak JWT config, session mismanagement, no MFA support
+7. **Vulnerable dependencies** — use results from Step 3
+8. **SSRF** — unvalidated URL fetching, DNS rebinding, internal network access
+
+**Secondary — scan after critical path:**
+
+9. **Data integrity** — prototype pollution, unsafe deserialization, missing CSP
+10. **Security misconfiguration** — debug mode in prod, missing helmet, verbose errors
+11. **Insecure design** — mass assignment, missing rate limiting, no input schemas
+12. **Logging failures** — no audit logging, sensitive data in logs, missing monitoring
+
+**Infrastructure checks (if detected):**
+
+13. **AWS Lambda** — event source injection, env var secrets, IAM over-permission, function URL auth bypass, /tmp abuse, credential caching, layer poisoning
+14. **Docker/ECS/Fargate** — running as root, --inspect in production, secrets in Dockerfile, missing .dockerignore, SIGTERM handling, ALB/WAF, image scanning
+15. **Terraform IaC** — IAM wildcards, function URL auth, plaintext secrets, privileged containers, public IP, debug ports, state file encryption, EOL runtimes (Checkov/tfsec cross-reference)
+16. **CloudFormation/SAM IaC** — wildcard IAM, hardcoded secrets, missing VPC/DLQ/concurrency, privileged containers, ECS Exec, public IP, ALB without WAF (cfn-nag/AWS Config cross-reference)
+17. **Serverless Framework** — wildcard IAM, per-function roles, missing authorizers, cors: true, hardcoded env secrets, function URL auth, serverless-offline/dotenv risks, deployment bucket encryption
+
+**Framework checks (if detected):**
+
+18. **Express/Koa** — helmet, CSRF, CORS, body limits, sessions, webpack production config risks (source maps, env leaks, eval devtools)
+19. **NestJS** — guards, validation pipes, DTO bypass, TypeORM/Prisma injection, Swagger exposure, WebSocket security, GraphQL depth limiting, exception filter leaks, serialization risks
+20. **Fastify** — schema validation bypass, plugin encapsulation, reply.hijack(), TypeBox schema injection, content type parser abuse, @fastify/static traversal
+21. **Bun runtime** — Bun.serve() security headers, Bun shell injection, bun:sqlite injection, Bun.file() path traversal, non-cryptographic Bun.hash usage
+22. **AppSync/Amplify** — authorization mode misconfiguration, resolver injection, GraphQL introspection, Cognito misconfiguration, API key exposure, AppSync Events security
+
+### Step 5: Generate the report
+
+Read `references/report-template.md` for the exact output format. The report must include:
+
+- **Security Score (0-100)** calculated using the scoring methodology: start at 100, subtract 15/Critical, 10/High, 5/Medium, 2/Low, +5 bonus if no Critical/High, minimum 0. Display with letter grade (A+ through F) and visual progress bar.
+- **Findings Dashboard** with total count, score, and top finding per severity level with file locations
+- **Node.js runtime version assessment** (Critical if EOL, with specific unpatched CVEs)
+- **Vulnerable built-in API usage** section with affected files
+- **Framework Security Assessment** (Express/Koa/webpack checks if detected)
+- Findings sorted by severity, each with: ID, title, severity, OWASP category, `filepath:line` location, all affected files listed, vulnerable code snippet, explanation, and remediation code snippet
+- **Quick Wins** section — top 3-5 easiest fixes with biggest score impact and projected score after fixes
+- Best practices checklist
+- Recommended tools section
+- **Summary footer** repeating the score, top priority, and projected score after Quick Wins
+
+**Severity classification:**
+
+| Severity | Criteria |
+|----------|----------|
+| Critical | EOL Node.js runtime, RCE, SQL injection, hardcoded secrets in public repos, auth bypass |
+| High     | XSS, CSRF without tokens, SSRF, prototype pollution, weak crypto, vulnerable built-in API usage |
+| Medium   | Missing security headers, verbose error messages, no rate limiting, outdated deps with known CVEs |
+| Low      | Missing strict mode, console.log with PII, no input length limits, informational findings |
+
+### Step 6: Save and present
+
+Save the report as `security-audit-report.md` and present a brief console summary to the user:
+
+1. The Security Score with grade and progress bar
+2. Finding counts by severity
+3. Top 3 Quick Wins with point values
+4. The full report file path

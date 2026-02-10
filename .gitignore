@@ -1,0 +1,10 @@
+# Generated audit outputs
+security-audit-report.md
+dependency-audit-results.txt
+node-version-audit.txt
+
+# Research artifacts
+research-*.md
+
+# OS files
+.DS_Store
