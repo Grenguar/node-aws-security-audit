@@ -121,10 +121,10 @@ bash <skill-path>/scripts/node-version-check.sh
 
 This checks:
 
-- Node.js runtime version against known EOL/CVE data
-- Usage of vulnerable built-in APIs (http parser, crypto, child_process, vm, etc.)
-- OpenSSL version bundled with the runtime
-- Dangerous built-in patterns specific to the detected Node.js version
+* Node.js runtime version against known EOL/CVE data
+* Usage of vulnerable built-in APIs (http parser, crypto, child_process, vm, etc.)
+* OpenSSL version bundled with the runtime
+* Dangerous built-in patterns specific to the detected Node.js version
 
 Read `references/version-vulnerabilities.md` for the full mapping of Node.js
 versions to known CVEs and vulnerable built-in APIs.
@@ -189,16 +189,16 @@ using the grep patterns provided.
 
 Read `references/report-template.md` for the exact output format. The report must include:
 
-- **Security Score (0-100)** calculated using the scoring methodology: start at 100, subtract 15/Critical, 10/High, 5/Medium, 2/Low, +5 bonus if no Critical/High, minimum 0. Display with letter grade (A+ through F) and visual progress bar.
-- **Findings Dashboard** with total count, score, and top finding per severity level with file locations
-- **Node.js runtime version assessment** (Critical if EOL, with specific unpatched CVEs)
-- **Vulnerable built-in API usage** section with affected files
-- **Framework Security Assessment** (Express/Koa/webpack checks if detected)
-- Findings sorted by severity, each with: ID, title, severity, OWASP category, `filepath:line` location, all affected files listed, vulnerable code snippet, explanation, and remediation code snippet
-- **Quick Wins** section — top 3-5 easiest fixes with biggest score impact and projected score after fixes
-- Best practices checklist
-- Recommended tools section
-- **Summary footer** repeating the score, top priority, and projected score after Quick Wins
+* **Security Score (0-100)** calculated using the scoring methodology: start at 100, subtract 15/Critical, 10/High, 5/Medium, 2/Low, +5 bonus if no Critical/High, minimum 0. Display with letter grade (A+ through F) and visual progress bar.
+* **Findings Dashboard** with total count, score, and top finding per severity level with file locations
+* **Node.js runtime version assessment** (Critical if EOL, with specific unpatched CVEs)
+* **Vulnerable built-in API usage** section with affected files
+* **Framework Security Assessment** (Express/Koa/webpack checks if detected)
+* Findings sorted by severity, each with: ID, title, severity, OWASP category, `filepath:line` location, all affected files listed, vulnerable code snippet, explanation, and remediation code snippet
+* **Quick Wins** section — top 3-5 easiest fixes with biggest score impact and projected score after fixes
+* Best practices checklist
+* Recommended tools section
+* **Summary footer** repeating the score, top priority, and projected score after Quick Wins
 
 **Severity classification:**
 
@@ -218,6 +218,6 @@ Save the report as `security-audit-report.md` and then:
 2. After the full report, remind the user the file was saved to `security-audit-report.md`.
 3. Ask the user if they would like a **PDF version** of the report. If they say yes,
    generate the PDF using one of these methods (in preference order):
-   - `npx md-to-pdf security-audit-report.md` (no install needed)
-   - `pandoc security-audit-report.md -o security-audit-report.pdf` (if pandoc is available)
-   - If neither works, inform the user and suggest installing one of the tools.
+   * `npx md-to-pdf security-audit-report.md` (no install needed)
+   * `pandoc security-audit-report.md -o security-audit-report.pdf` (if pandoc is available)
+   * If neither works, inform the user and suggest installing one of the tools.
