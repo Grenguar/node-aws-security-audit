@@ -235,7 +235,7 @@ See [CHANGELOG.md](CHANGELOG.md) for release history.
 
 Open-source project by **[Soroka Tech](https://soroka.tech)** -- full-stack cloud consulting.
 
-Need a professional security assessment or remediation? [Contact us](https://soroka.tech).
+Need a professional security assessment or remediation? [Contact us](https://www.soroka.tech/contact).
 
 ---
 
